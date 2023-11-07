@@ -6,6 +6,7 @@
 #include "driver/gpio.h"
 
 #define ENCODER_PULSES 100
+
 typedef enum {
 	MOVE_None,
 	MOVE_Z_CW, MOVE_Z_CCW,

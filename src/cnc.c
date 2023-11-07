@@ -11,8 +11,15 @@ static QueueHandle_t cnc_tx_q;
 xQueueHandle get_cnctx_queue() { return cnc_tx_q; }
 
 static void cncRxTask(void* args) {
-    char c; // temp one-symbol buffer
+    // status report: <Idle|MPos:-0.999,-121.001,-36.979|FS:0,0|Pn:P|Ov:30,100,100>
+    // https://github.com/gnea/grbl/wiki/Grbl-v1.1-Interface#real-time-status-reports
 
+    char statusBuf[UART_BUF_SIZE];
+    uint8_t bufPos = 0;
+    memset((void*)statusBuf, 0, UART_BUF_SIZE);
+
+    char c; // temp one-symbol buffer
+    
     for(;;) {
         c = 0;
         int st = uart_read_bytes(CNC_UART, &c, 1, 100 / portTICK_PERIOD_MS);
@@ -21,7 +28,11 @@ static void cncRxTask(void* args) {
             continue;
         }
         if(st == 0 || c == 0)continue;
+
         uart_write_bytes(CANDLE_UART, &c, 1);
+
+        if(c == '<') {// status command start
+        }
     }
 
     vTaskDelete(NULL);

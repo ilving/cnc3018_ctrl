@@ -21,6 +21,12 @@ typedef struct {
     char cmd[UART_BUF_SIZE];
 } qItem;
 
+typedef struct {
+    uint8_t feed_override;
+    uint8_t spindle_override;
+    uint8_t z_probe;
+} machineState;
+
 extern void init_cnc(void);
 extern xQueueHandle get_cnctx_queue();
 #endif
