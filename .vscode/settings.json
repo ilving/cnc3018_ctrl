@@ -1,0 +1,10 @@
+{
+	"files.associations": {
+		"Makefile.common": "makefile",
+		"*.swagger": "yaml",
+		"*.grpc": "grpc",
+		"esp_log.h": "c",
+		"uart.h": "c",
+		"controls.h": "c"
+	}
+}
