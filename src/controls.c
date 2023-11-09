@@ -39,15 +39,19 @@ static void movementTask(void* args) {
 
 		moveCount++;
 
+		float z_shift = gpio_get_level(Z_DIST_PIN) == 0 ? MOVE_1X : MOVE_10X;
+		float xy_shift = gpio_get_level(XY_DIST_PIN) == 0 ? MOVE_1X : MOVE_10X;
+
 		switch (move) {
 			case MOVE_None: break;
-			case MOVE_Z_CW: moveZ += 0.01;	break;
-			case MOVE_Z_CCW: moveZ -= 0.01;	break;			
-			case MOVE_X_CW: moveX += 0.01;	break;
-			case MOVE_X_CCW: moveX -= 0.01;	break;			
-			case MOVE_Y_CW: moveY += 0.01;	break;
-			case MOVE_Y_CCW: moveY -= 0.01;	break;			
+			case MOVE_Z_CW: moveZ += z_shift;	break;
+			case MOVE_Z_CCW: moveZ -= z_shift;	break;			
+			case MOVE_X_CW: moveX += xy_shift;	break;
+			case MOVE_X_CCW: moveX -= xy_shift;	break;			
+			case MOVE_Y_CW: moveY += xy_shift;	break;
+			case MOVE_Y_CCW: moveY -= xy_shift;	break;			
 		}
+		
 		//ESP_LOGI(CRX_TAG, "move: %u", (uint8_t)move);
 	}
 
@@ -80,6 +84,10 @@ static void encodersTask(void* args) {
 void init_controls(void) {
 	move_queue = xQueueCreate(32, sizeof(Movement_t));
 	esp_log_level_set(CONTROLS_TAG, ESP_LOG_ERROR);
+
+	gpio_pad_select_gpio(Z_DIST_PIN);
+	gpio_set_direction(Z_DIST_PIN, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(Z_DIST_PIN, GPIO_PULLDOWN_ONLY);
 
 	xTaskCreate(encodersTask, "encodersTask", 1024, NULL, configMAX_PRIORITIES, NULL);
 	xTaskCreate(movementTask, "movementTask", 2048, NULL, 1, NULL);
