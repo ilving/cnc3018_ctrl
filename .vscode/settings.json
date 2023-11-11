@@ -5,6 +5,12 @@
 		"*.grpc": "grpc",
 		"esp_log.h": "c",
 		"uart.h": "c",
-		"controls.h": "c"
+		"controls.h": "c",
+		"oled_i2c.h": "c",
+		"hw_esp32.h": "c",
+		"ssd1306.h": "c",
+		"wire.h": "c",
+		"gpio.h": "c",
+		"i2c_types.h": "c"
 	}
 }

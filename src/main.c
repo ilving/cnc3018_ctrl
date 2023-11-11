@@ -8,6 +8,7 @@
 #include "isr.h"
 #include "cnc.h"
 #include "controls.h"
+#include "screen.h"
 
 #define LOG_BUFFER_LEN 512
 
@@ -17,6 +18,8 @@ void app_main() {
     init_cnc();
     init_isr();
     init_controls();
+
+    init_screen();
 }
 
 int __log(const char *format, va_list args) {

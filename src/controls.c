@@ -25,15 +25,25 @@ static void movementTask(void* args) {
         BaseType_t qGet = xQueueReceive(move_queue, (void *)&move, 100/portTICK_PERIOD_MS);
 		
 		if (qGet == pdFALSE || moveCount == ENCODER_PULSES/2) {
-			if (moveX != 0 || moveY != 0 || moveZ != 0) {
-				snprintf(cncCmd.cmd, UART_BUF_SIZE, "$J=G21G91X%.3fY%.3fZ%.3fF500\r\n", moveX, moveY, moveZ);
+			moveCount = 0;
+
+			if (moveX != 0 || moveY != 0) {
+				snprintf(cncCmd.cmd, UART_BUF_SIZE, "$J=G21G91X%.3fY%.3fF500\r\n", moveX, moveY);
 				xQueueSend(cncTx, &cncCmd, 100/portTICK_PERIOD_MS);
 
 				ESP_LOGI(CONTROLS_TAG, "[%s]", cncCmd.cmd);
 
-				moveX = moveY = moveZ = 0;
-				moveCount = 0;
+				moveX = moveY = 0;
 			}
+			if (moveZ != 0) {
+				snprintf(cncCmd.cmd, UART_BUF_SIZE, "$J=G21G91Z%.3fF500\r\n", moveZ);
+				xQueueSend(cncTx, &cncCmd, 100/portTICK_PERIOD_MS);
+
+				ESP_LOGI(CONTROLS_TAG, "[%s]", cncCmd.cmd);
+
+				moveZ = 0;
+			}
+			
 			continue;
 		}
 
