@@ -18,6 +18,9 @@ SSD1306_t lcd;
 
 #define SCREEN_STATE_POS 0 * SCREEN_SYM_WIDTH + 0
 #define SCREEN_CSYSTEM_POS 0 * SCREEN_SYM_WIDTH + 0x0D
+
+#define SCREEN_ZPROBE_POS 1 * SCREEN_SYM_WIDTH + 0x0F
+
 /*
   0123456789ABCDEF
 0 idle.........Gxx
@@ -36,6 +39,8 @@ static void screenTask(void* args) {
 
 		sprintf(&buf[SCREEN_STATE_POS], "%-7s", get_cnc_state_name(state->state));
 		sprintf(&buf[SCREEN_CSYSTEM_POS], "G%02u", state->coord_system);
+
+		if(state->z_probe) buf[SCREEN_ZPROBE_POS] = PINSTATE_Z_PROBE;
 
 		sprintf(&buf[SCREEN_Z_STRING + 0], "Z :");
 

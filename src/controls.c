@@ -23,6 +23,8 @@ static void movementTask(void* args) {
 
 	float moveX=0, moveY=0, moveZ=0;
 
+	machineStatus_t *state = get_cnc_status();
+
 	for(;;) {
         BaseType_t qGet = xQueueReceive(move_queue, (void *)&move, 100/portTICK_PERIOD_MS);
 		
@@ -57,14 +59,12 @@ static void movementTask(void* args) {
 		switch (move) {
 			case MOVE_None: break;
 			case MOVE_Z_CW: moveZ += z_shift;	break;
-			case MOVE_Z_CCW: moveZ -= z_shift;	break;			
+			case MOVE_Z_CCW: moveZ -= (state->z_probe ? 0 : z_shift);	break;			
 			case MOVE_X_CW: moveX += xy_shift;	break;
 			case MOVE_X_CCW: moveX -= xy_shift;	break;			
 			case MOVE_Y_CW: moveY += xy_shift;	break;
 			case MOVE_Y_CCW: moveY -= xy_shift;	break;			
 		}
-		
-		//ESP_LOGI(CRX_TAG, "move: %u", (uint8_t)move);
 	}
 
 	vTaskDelete(NULL);

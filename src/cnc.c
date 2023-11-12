@@ -53,6 +53,26 @@ static void cncRxTask(void* args) {
                     case 'S': state.state = CNC_STATE_SLEEP; break;
                     default: state.state = CNC_STATE_UNDEFINED;
                 }
+
+                int bl = strnlen(buf, UART_BUF_SIZE);
+                
+                state.z_probe = false;
+
+                for(int i=1;i<bl;i++) {
+                    if(buf[i-1] == '|') {
+                        ESP_LOGV(CRX_TAG, "sep %d %d", bl, i);
+                        if(strncmp(&buf[i], "Pn:", 3) == 0) { // Input pin state, Pn:XYZPDHRS
+                            ESP_LOGI(CRX_TAG, "pn");
+                            for(int j = i+3;j<bl && buf[j] != '|';j++) {
+                                switch(buf[j]) {
+                                    case PINSTATE_Z_PROBE: state.z_probe = true; break;
+                                }
+                            }
+                        } else {
+
+                        }
+                    }
+                }
             } else if (strncmp("[GC:", buf, 4) == 0) {
                 // https://github.com/gnea/grbl/blob/v1.1f.20170801/grbl/report.c#L285     
                 // [GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0.0 S0]

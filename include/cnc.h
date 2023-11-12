@@ -40,8 +40,14 @@ typedef struct {
     uint8_t coord_system;
     uint8_t feed_override;
     uint8_t spindle_override;
-    uint8_t z_probe;
+    bool z_probe;
 } machineStatus_t;
+
+#define PINSTATE_Z_PROBE 'P'
+
+#define PINSTATE_Z_LIMIT 'Z'
+#define PINSTATE_X_LIMIT 'X'
+#define PINSTATE_Y_LIMIT 'Y'
 
 extern void init_cnc(void);
 extern xQueueHandle get_cnctx_queue();
