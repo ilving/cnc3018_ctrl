@@ -12,6 +12,8 @@
 
 static xQueueHandle move_queue = NULL;
 
+float z_dist_per_tick() { return gpio_get_level(Z_DIST_PIN) == 0 ? MOVE_1X_STEP : MOVE_10X_STEP; };
+
 static void movementTask(void* args) {
 	xQueueHandle cncTx = get_cnctx_queue();
 
@@ -49,8 +51,8 @@ static void movementTask(void* args) {
 
 		moveCount++;
 
-		float z_shift = gpio_get_level(Z_DIST_PIN) == 0 ? MOVE_1X : MOVE_10X;
-		float xy_shift = gpio_get_level(XY_DIST_PIN) == 0 ? MOVE_1X : MOVE_10X;
+		float z_shift = z_dist_per_tick();
+		float xy_shift = gpio_get_level(XY_DIST_PIN) == 0 ? MOVE_1X_STEP : MOVE_10X_STEP;
 
 		switch (move) {
 			case MOVE_None: break;
@@ -98,6 +100,10 @@ void init_controls(void) {
 	gpio_pad_select_gpio(Z_DIST_PIN);
 	gpio_set_direction(Z_DIST_PIN, GPIO_MODE_INPUT);
 	gpio_set_pull_mode(Z_DIST_PIN, GPIO_PULLDOWN_ONLY);
+
+	gpio_pad_select_gpio(XY_DIST_PIN);
+	gpio_set_direction(XY_DIST_PIN, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(XY_DIST_PIN, GPIO_PULLDOWN_ONLY);
 
 	xTaskCreate(encodersTask, "encodersTask", 1024, NULL, configMAX_PRIORITIES, NULL);
 	xTaskCreate(movementTask, "movementTask", 2048, NULL, 1, NULL);

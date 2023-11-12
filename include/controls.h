@@ -34,10 +34,10 @@ extern void init_controls(void);
 	// 00010000 
 	// 00000000
 
-#define MOVE_1X 0.01
-#define MOVE_10X 0.1
+#define MOVE_1X_STEP 0.01
+#define MOVE_10X_STEP 0.1
 
 #define Z_DIST_PIN GPIO_NUM_2
-#define XY_DIST_PIN GPIO_NUM_0
+#define XY_DIST_PIN GPIO_NUM_0 // it's pulled up!!!
 
 #endif
