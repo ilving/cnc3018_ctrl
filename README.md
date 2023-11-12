@@ -1,7 +1,11 @@
 # Proxy controller for CNC3018
+### Fetures:
+- [x] Wired proxy from Candle to cnc3018
+- [x] Z-axis rotary encoder + x1\x10 move-per-rev flag
 
-ToDo:
+### ToDo:
 - [ ] CNC3018 response parser (state, MPos, probe, override) 
+- [ ] Case for encores, pcb, ...
 - [ ] Screen (display probe, coords(?), overrides, state, errors)
 - [ ] XY and Z feed override read from variable resiztor and CNC
 - [ ] Rotary encoders for X and Y
