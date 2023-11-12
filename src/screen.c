@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "cnc.h"
 #include "screen.h"
 #include "controls.h"
 
@@ -14,19 +15,27 @@ SSD1306_t lcd;
 
 #define SCREEN_Z_STRING 2 * SCREEN_SYM_WIDTH
 #define SCREEN_XY_STRING 3 * SCREEN_SYM_WIDTH
+
+#define SCREEN_STATE_POS 0 * SCREEN_SYM_WIDTH + 0
+#define SCREEN_CSYSTEM_POS 0 * SCREEN_SYM_WIDTH + 0x0D
 /*
   0123456789ABCDEF
-0 St
-1 St ?
+0 idle.........Gxx
+1 ................
 2 Z : ........ x10
 3 XY: ........ x10
 */
 static void screenTask(void* args) {
 	static char buf[SCREEN_BUF_LEN];
 
+	machineStatus_t *state = get_cnc_status();
+
 	for(;;) {
 		memset(buf, ' ', SCREEN_BUF_LEN);
 		//sprintf(&buf[0], "S: ");
+
+		sprintf(&buf[SCREEN_STATE_POS], "%-7s", get_cnc_state_name(state->state));
+		sprintf(&buf[SCREEN_CSYSTEM_POS], "G%02u", state->coord_system);
 
 		sprintf(&buf[SCREEN_Z_STRING + 0], "Z :");
 

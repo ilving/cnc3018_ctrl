@@ -8,17 +8,20 @@
 #include "cnc.h"
 
 static QueueHandle_t cnc_tx_q;
+xQueueHandle get_cnctx_queue() { return cnc_tx_q; };
+
 static QueueHandle_t cnc_instant_tx_q;
 
-xQueueHandle get_cnctx_queue() { return cnc_tx_q; }
+static machineStatus_t state;
+machineStatus_t* get_cnc_status() { return &state; };
 
 static void cncRxTask(void* args) {
     // status report: <Idle|MPos:-0.999,-121.001,-36.979|FS:0,0|Pn:P|Ov:30,100,100>
     // https://github.com/gnea/grbl/wiki/Grbl-v1.1-Interface#real-time-status-reports
 
-    char statusBuf[UART_BUF_SIZE];
-    uint8_t bufPos = 0;
-    memset((void*)statusBuf, 0, UART_BUF_SIZE);
+    char buf[UART_BUF_SIZE];
+    uint8_t pos = 0;
+    memset((void*)buf, 0, UART_BUF_SIZE);
 
     char c; // temp one-symbol buffer
     
@@ -33,7 +36,33 @@ static void cncRxTask(void* args) {
 
         uart_write_bytes(CANDLE_UART, &c, 1);
 
-        if(c == '<') {// status command start
+        if(pos < UART_BUF_SIZE) { buf[pos] = c;pos++; };
+
+        if (c == '\r' || c == '\n') {
+            buf[UART_BUF_SIZE-1] = 0;
+
+            if(buf[0] == '<') { // chevron symbol
+                switch (buf[1]){
+                    case 'I': state.state = CNC_STATE_IDLE; break;
+                    case 'R': state.state = CNC_STATE_RUN; break;
+                    case 'H': state.state = CNC_STATE_HOME;if(buf[3] == 'l') state.state = CNC_STATE_HOLD;break;
+                    case 'J': state.state = CNC_STATE_JOG; break;
+                    case 'A': state.state = CNC_STATE_ALARM; break;
+                    case 'D': state.state = CNC_STATE_DOOR; break;
+                    case 'C': state.state = CNC_STATE_CHECK; break;
+                    case 'S': state.state = CNC_STATE_SLEEP; break;
+                    default: state.state = CNC_STATE_UNDEFINED;
+                }
+            } else if (strncmp("[GC:", buf, 4) == 0) {
+                // https://github.com/gnea/grbl/blob/v1.1f.20170801/grbl/report.c#L285     
+                // [GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0.0 S0]
+                char* c_plane = strchr(&buf[4], ' ');
+
+                if(c_plane != NULL) sscanf(&c_plane[2], "%hhu", &state.coord_system);
+            }
+
+            memset((void*)buf, 0, UART_BUF_SIZE);
+            pos = 0;
         }
     }
 
@@ -102,6 +131,20 @@ static void candleRxTask(void* args) {
     vTaskDelete(NULL);
 }
 
+const char* get_cnc_state_name(cncState_t state) {
+    switch(state) {
+        case CNC_STATE_IDLE: return "idle";
+        case CNC_STATE_RUN: return "run";
+        case CNC_STATE_HOLD: return "hold";
+        case CNC_STATE_JOG: return "jog";
+        case CNC_STATE_ALARM: return "ALARM";
+        case CNC_STATE_DOOR: return "door";
+        case CNC_STATE_CHECK: return "chk";
+        case CNC_STATE_HOME: return "H";
+        case CNC_STATE_SLEEP: return "sleep";
+        default: return "undef";
+    }
+}
 
 void init_cnc(void) {
     uart_config_t uartCfg = {
