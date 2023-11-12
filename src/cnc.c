@@ -60,16 +60,14 @@ static void cncRxTask(void* args) {
 
                 for(int i=1;i<bl;i++) {
                     if(buf[i-1] == '|') {
-                        ESP_LOGV(CRX_TAG, "sep %d %d", bl, i);
                         if(strncmp(&buf[i], "Pn:", 3) == 0) { // Input pin state, Pn:XYZPDHRS
-                            ESP_LOGI(CRX_TAG, "pn");
                             for(int j = i+3;j<bl && buf[j] != '|';j++) {
                                 switch(buf[j]) {
                                     case PINSTATE_Z_PROBE: state.z_probe = true; break;
                                 }
                             }
-                        } else {
-
+                        } else if(strncmp(&buf[i], "Ov:", 3) == 0) { // Override Values. Ov:feed%, rapids%, spindle%
+                            sscanf(&buf[i+3], "%hhu,%hhu,%hhu", &state.feed_override, &state.rapid_override, &state.spindle_override);
                         }
                     }
                 }

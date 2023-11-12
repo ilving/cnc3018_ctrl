@@ -21,10 +21,13 @@ SSD1306_t lcd;
 
 #define SCREEN_ZPROBE_POS 1 * SCREEN_SYM_WIDTH + 0x0F
 
+#define SCREEN_FEED_OVERRIDE_POS 1 * SCREEN_SYM_WIDTH + 0x00
+#define SCREEN_SPINDLE_OVERRIDE_POS 1 * SCREEN_SYM_WIDTH + 0x05
+
 /*
   0123456789ABCDEF
 0 idle.........Gxx
-1 ................
+1 F100.S100......P
 2 Z : ........ x10
 3 XY: ........ x10
 */
@@ -35,12 +38,14 @@ static void screenTask(void* args) {
 
 	for(;;) {
 		memset(buf, ' ', SCREEN_BUF_LEN);
-		//sprintf(&buf[0], "S: ");
 
 		sprintf(&buf[SCREEN_STATE_POS], "%-7s", get_cnc_state_name(state->state));
 		sprintf(&buf[SCREEN_CSYSTEM_POS], "G%02u", state->coord_system);
 
 		if(state->z_probe) buf[SCREEN_ZPROBE_POS] = PINSTATE_Z_PROBE;
+
+		sprintf(&buf[SCREEN_FEED_OVERRIDE_POS], "F%3u", state->feed_override);
+		sprintf(&buf[SCREEN_SPINDLE_OVERRIDE_POS], "S%3u", state->spindle_override);
 
 		sprintf(&buf[SCREEN_Z_STRING + 0], "Z :");
 

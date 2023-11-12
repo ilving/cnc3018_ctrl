@@ -39,6 +39,7 @@ typedef struct {
     cncState_t state;
     uint8_t coord_system;
     uint8_t feed_override;
+    uint8_t rapid_override;
     uint8_t spindle_override;
     bool z_probe;
 } machineStatus_t;
