@@ -8,6 +8,8 @@
 #include "cnc.h"
 
 static QueueHandle_t cnc_tx_q;
+static QueueHandle_t cnc_instant_tx_q;
+
 xQueueHandle get_cnctx_queue() { return cnc_tx_q; }
 
 static void cncRxTask(void* args) {
@@ -41,22 +43,16 @@ static void cncRxTask(void* args) {
 static void cncTxTask(void* args) {
     static qItem event;
     size_t cmd_len = 0;
-    for(;;) {
-        if (xQueueReceive(cnc_tx_q, (void *)&event, (TickType_t)portMAX_DELAY)) {
-            switch(event.cmd[0]) {
-                case CMD_RESET:
-                    xQueueReset(cnc_tx_q);
-                case CMD_CYCLE_START:
-                case CMD_FEED_HOLD:
-                case CMD_SAFETY_DOOR:
-                case CMD_STATUS_REPORT:
-                    uart_write_bytes(CNC_UART, event.cmd, 1);
-                    break;
+    static char instant = 0;
 
-                default:
-                    cmd_len = strnlen(event.cmd, UART_BUF_SIZE);
-                    uart_write_bytes(CNC_UART, event.cmd, cmd_len);
-            }
+    for(;;) {
+        if (xQueueReceive(cnc_instant_tx_q, (void *)&instant, 10/portTICK_PERIOD_MS)) {
+            uart_write_bytes(CNC_UART, &instant, 1);
+        }
+
+        if (xQueueReceive(cnc_tx_q, (void *)&event, 10/portTICK_PERIOD_MS)) {
+            cmd_len = strnlen(event.cmd, UART_BUF_SIZE);
+            uart_write_bytes(CNC_UART, event.cmd, cmd_len);
         }
     }
 	
@@ -64,10 +60,6 @@ static void cncTxTask(void* args) {
 }
 
 static void candleRxTask(void* args) {
-
-    static qItem instant;
-	memset((void*)&instant.cmd, 0, UART_BUF_SIZE);
-
     static qItem buf;
     static uint16_t bufPos = 0;
 	memset((void*)&buf.cmd, 0, UART_BUF_SIZE);
@@ -90,8 +82,7 @@ static void candleRxTask(void* args) {
             case CMD_CYCLE_START:
             case CMD_RESET:
             case CMD_SAFETY_DOOR:
-                instant.cmd[0] = c;
-                xQueueSend(cnc_tx_q, &instant, portTICK_PERIOD_MS);
+                xQueueSend(cnc_instant_tx_q, &c, portMAX_DELAY);
                 continue;
         }
 
@@ -135,6 +126,7 @@ void init_cnc(void) {
     esp_log_level_set(CRX_TAG, ESP_LOG_INFO);
 
 	cnc_tx_q = xQueueCreate(20, sizeof(qItem));
+	cnc_instant_tx_q = xQueueCreate(20, sizeof(char));
 
 	xTaskCreate(candleRxTask, "candleRxTask", 2048, NULL, 1, NULL);
 	xTaskCreate(cncTxTask, "cncTxTask", 2048, NULL, 1, NULL);
