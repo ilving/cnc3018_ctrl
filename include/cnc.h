@@ -12,6 +12,26 @@
 #define CMD_RESET 0x18 // ctrl-x.
 #define CMD_SAFETY_DOOR '@'
 
+#define CMD_FEED_OV_NORMAL 0x90
+#define CMD_FEED_OV_INC_10 0x91
+#define CMD_FEED_OV_DEC_10 0x92
+#define CMD_FEED_OV_INC_1  0x93
+#define CMD_FEED_OV_DEC_1  0x94
+
+#define CMD_DOOR 0x84 // ???
+#define CMD_JOG_CANCEL 0x85
+
+#define CMD_RAPID_100 0x95
+#define CMD_RAPID_50 0x96
+#define CMD_RAPID_25 0x97
+
+#define CMD_SPINDLE_100 0x99
+#define CMD_SPINDLE_INC_10 0x9A
+#define CMD_SPINDLE_DEC_10 0x9B
+#define CMD_SPINDLE_INC_1 0x9C
+#define CMD_SPINDLE_DEC_1 0x9D
+#define CMD_SPINDLE_STOP 0x9E
+
 #define CANDLE_UART UART_NUM_0
 #define CNC_UART UART_NUM_2
 
@@ -36,6 +56,7 @@ typedef enum {
 } cncState_t;
 
 typedef struct {
+    bool active;
     cncState_t state;
     uint8_t coord_system;
     uint8_t feed_override;
@@ -52,6 +73,7 @@ typedef struct {
 
 extern void init_cnc(void);
 extern xQueueHandle get_cnctx_queue();
+extern xQueueHandle get_cncinstant_queue();
 
 extern machineStatus_t* get_cnc_status();
 extern const char* get_cnc_state_name(cncState_t state);

@@ -38,33 +38,37 @@ static void screenTask(void* args) {
 
 	for(;;) {
 		memset(buf, ' ', SCREEN_BUF_LEN);
+		vTaskDelay(50/portTICK_PERIOD_MS);
 
-		sprintf(&buf[SCREEN_STATE_POS], "%-7s", get_cnc_state_name(state->state));
-		sprintf(&buf[SCREEN_CSYSTEM_POS], "G%02u", state->coord_system);
+		if(!state->active) {
+			sprintf(&buf[0], "CNC disconnected");
+		} else {
+			sprintf(&buf[SCREEN_STATE_POS], "%-7s", get_cnc_state_name(state->state));
+			sprintf(&buf[SCREEN_CSYSTEM_POS], "G%02u", state->coord_system);
 
-		if(state->z_probe) buf[SCREEN_ZPROBE_POS] = PINSTATE_Z_PROBE;
+			if(state->z_probe) buf[SCREEN_ZPROBE_POS] = PINSTATE_Z_PROBE;
 
-		sprintf(&buf[SCREEN_FEED_OVERRIDE_POS], "F%3u", state->feed_override);
-		sprintf(&buf[SCREEN_SPINDLE_OVERRIDE_POS], "S%3u", state->spindle_override);
+			sprintf(&buf[SCREEN_FEED_OVERRIDE_POS], "F%3u", state->feed_override);
+			sprintf(&buf[SCREEN_SPINDLE_OVERRIDE_POS], "S%3u", state->spindle_override);
 
-		sprintf(&buf[SCREEN_Z_STRING + 0], "Z :");
+			sprintf(&buf[SCREEN_Z_STRING + 0], "Z :");
 
-		// Z: move x1 vs x10
-		if(gpio_get_level(Z_DIST_PIN) == 0)	sprintf(&buf[SCREEN_Z_STRING + 0x0D], "x 1");
-		else sprintf(&buf[SCREEN_Z_STRING + 0x0D], "x10");
+			// Z: move x1 vs x10
+			if(gpio_get_level(Z_DIST_PIN) == 0)	sprintf(&buf[SCREEN_Z_STRING + 0x0D], "x 1");
+			else sprintf(&buf[SCREEN_Z_STRING + 0x0D], "x10");
 
-		// XY: move x1 vs x10
-		sprintf(&buf[SCREEN_XY_STRING + 0], "XY:");
-		if(gpio_get_level(XY_DIST_PIN) == 0)sprintf(&buf[SCREEN_XY_STRING + 0x0D], "x 1");
-		else sprintf(&buf[SCREEN_XY_STRING + 0x0D], "x10");
+			// XY: move x1 vs x10
+			sprintf(&buf[SCREEN_XY_STRING + 0], "XY:");
+			if(gpio_get_level(XY_DIST_PIN) == 0)sprintf(&buf[SCREEN_XY_STRING + 0x0D], "x 1");
+			else sprintf(&buf[SCREEN_XY_STRING + 0x0D], "x10");
+		}
+
 
 
 		// send to display
 		for (int i=0; i<SCREEN_SYM_HEIGHT; i++) {
 			ssd1306_display_text(&lcd, i, &buf[SCREEN_SYM_WIDTH*i], SCREEN_SYM_WIDTH, false);
 		}
-
-		vTaskDelay(50/portTICK_PERIOD_MS);
 	}
 
 	vTaskDelete(NULL);

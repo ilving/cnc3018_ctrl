@@ -11,6 +11,7 @@ static QueueHandle_t cnc_tx_q;
 xQueueHandle get_cnctx_queue() { return cnc_tx_q; };
 
 static QueueHandle_t cnc_instant_tx_q;
+xQueueHandle get_cncinstant_queue() {return cnc_instant_tx_q; }
 
 static machineStatus_t state;
 machineStatus_t* get_cnc_status() { return &state; };
@@ -27,12 +28,18 @@ static void cncRxTask(void* args) {
     
     for(;;) {
         c = 0;
-        int st = uart_read_bytes(CNC_UART, &c, 1, 100 / portTICK_PERIOD_MS);
+        int st = uart_read_bytes(CNC_UART, &c, 1, 500 / portTICK_PERIOD_MS);
         if( st < 0) {
-            ESP_LOGE(CRX_TAG, "buf: %d", st);
+            ESP_LOGE(CNC_TAG, "buf: %d", st);
+            state.active = false;
             continue;
         }
-        if(st == 0 || c == 0)continue;
+        if(st == 0 || c == 0) {
+            state.active = false;
+            continue;
+        }
+
+        state.active = true;
 
         uart_write_bytes(CANDLE_UART, &c, 1);
 
@@ -118,18 +125,39 @@ static void candleRxTask(void* args) {
 
         int st = uart_read_bytes(CANDLE_UART, &c, 1, 100 / portTICK_PERIOD_MS);
         if( st < 0) {
-            ESP_LOGE(CRX_TAG, "buf: %d", st);
+            ESP_LOGE(CNC_TAG, "buf: %d", st);
             continue;
         }
         if(st == 0 || c == 0)continue;
 
-        switch(c) {
+        switch(c) { // known instant commands
             case CMD_STATUS_REPORT:
             case CMD_FEED_HOLD:
             case CMD_CYCLE_START:
             case CMD_RESET:
             case CMD_SAFETY_DOOR:
+
+            case CMD_DOOR:
+            case CMD_JOG_CANCEL:
+
+            case CMD_RAPID_100:
+            case CMD_RAPID_50:
+            case CMD_RAPID_25:
+            
+            case CMD_SPINDLE_100:
+            case CMD_SPINDLE_STOP:
+            case CMD_SPINDLE_DEC_10:
+            case CMD_SPINDLE_DEC_1:
+            case CMD_SPINDLE_INC_10:
+            case CMD_SPINDLE_INC_1:
                 xQueueSend(cnc_instant_tx_q, &c, portMAX_DELAY);
+                continue;
+
+            case CMD_FEED_OV_NORMAL: // bypassed due to candle behavior
+            case CMD_FEED_OV_INC_10:
+            case CMD_FEED_OV_INC_1:
+            case CMD_FEED_OV_DEC_10:
+            case CMD_FEED_OV_DEC_1:
                 continue;
         }
 
@@ -184,10 +212,12 @@ void init_cnc(void) {
 	uart_param_config(CNC_UART, &uartCfg);
 	uart_set_pin(CNC_UART, GPIO_NUM_16, GPIO_NUM_17, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
-    esp_log_level_set(CRX_TAG, ESP_LOG_INFO);
+    esp_log_level_set(CNC_TAG, ESP_LOG_INFO);
 
 	cnc_tx_q = xQueueCreate(20, sizeof(qItem));
 	cnc_instant_tx_q = xQueueCreate(20, sizeof(char));
+
+    state.active = false;
 
 	xTaskCreate(candleRxTask, "candleRxTask", 2048, NULL, 1, NULL);
 	xTaskCreate(cncTxTask, "cncTxTask", 2048, NULL, 1, NULL);

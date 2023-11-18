@@ -40,4 +40,6 @@ extern void init_controls(void);
 #define Z_DIST_PIN GPIO_NUM_2
 #define XY_DIST_PIN GPIO_NUM_0 // it's pulled up!!!
 
+#define FEDERATION_OVERRIDE ADC2_CHANNEL_3 //GPIO_NUM_15
+
 #endif
