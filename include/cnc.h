@@ -57,12 +57,17 @@ typedef enum {
 
 typedef struct {
     bool active;
+    
     cncState_t state;
     uint8_t coord_system;
-    uint8_t feed_override;
-    uint8_t rapid_override;
-    uint8_t spindle_override;
+
+    uint8_t feed_override, rapid_override, spindle_override;
+
     bool z_probe;
+
+    float mx, my, mz; // Machine coords
+    float wo_x, wo_y, wo_z; // Working offset
+    float wx, wy, wz; // Working coords
 } machineStatus_t;
 
 #define PINSTATE_Z_PROBE 'P'

@@ -43,12 +43,14 @@ static void cncRxTask(void* args) {
 
         uart_write_bytes(CANDLE_UART, &c, 1);
 
-        if(pos < UART_BUF_SIZE) { buf[pos] = c;pos++; };
+        if(pos < UART_BUF_SIZE) { buf[pos] = c;pos++;};
 
         if (c == '\r' || c == '\n') {
             buf[UART_BUF_SIZE-1] = 0;
-
+            buf[pos-1] = 0;
+            
             if(buf[0] == '<') { // chevron symbol
+                // <Idle|MPos:-25.999,-16.000,-11.050|FS:0,0|WCO:-84.000,-90.500,-41.000>
                 switch (buf[1]){
                     case 'I': state.state = CNC_STATE_IDLE; break;
                     case 'R': state.state = CNC_STATE_RUN; break;
@@ -62,7 +64,11 @@ static void cncRxTask(void* args) {
                 }
 
                 int bl = strnlen(buf, UART_BUF_SIZE);
-                
+                // for(int i=1;i<bl;i++) {
+                //     if(buf[i]==',') buf[i] = ' ';
+                //     if(buf[i]=='>') buf[i]=' ';
+                // }
+
                 state.z_probe = false;
 
                 for(int i=1;i<bl;i++) {
@@ -73,19 +79,35 @@ static void cncRxTask(void* args) {
                                     case PINSTATE_Z_PROBE: state.z_probe = true; break;
                                 }
                             }
-                        } else if(strncmp(&buf[i], "Ov:", 3) == 0) { // Override Values. Ov:feed%, rapids%, spindle%
+                        } else if (strncmp(&buf[i], "Ov:", 3) == 0) { // Override Values. Ov:feed%, rapids%, spindle%
                             sscanf(&buf[i+3], "%hhu,%hhu,%hhu", &state.feed_override, &state.rapid_override, &state.spindle_override);
+                        } else if (strncmp(&buf[i], "MPos:", 5) == 0) { // machine coords
+                            sscanf(&buf[i+5], "%f,%f,%f", &state.mx, &state.my, &state.mz);
+                        } else if (strncmp(&buf[i], "WCO:", 4) == 0) { // working offset
+                            //ESP_LOGI(CNC_TAG, ">%s<", &buf[i+4]);
+                            sscanf(&buf[i+4], "%f,%f,%f", &state.wo_x, &state.wo_y, &state.wo_z);
                         }
                     }
                 }
             } else if (strncmp("[GC:", buf, 4) == 0) {
-                // https://github.com/gnea/grbl/blob/v1.1f.20170801/grbl/report.c#L285     
                 // [GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0.0 S0]
-                char* c_plane = strchr(&buf[4], ' ');
+                // https://github.com/gnea/grbl/blob/v1.1f.20170801/grbl/report.c#L285     
+                float tval;
+                for(int i=4;i<strnlen(buf, UART_BUF_SIZE);i++) {
+                    if(buf[i] == 'G') {
+                        sscanf(&buf[i+1], "%f", &tval);
+                        int iVal = (int)(tval*10);
 
-                if(c_plane != NULL) sscanf(&c_plane[2], "%hhu", &state.coord_system);
+                        if(iVal >= 540 && iVal <= 590) {// G54..G59
+                            state.coord_system = (iVal/10)-54;
+                        }
+                    }
+                }
             }
 
+            state.wx = state.mx - state.wo_x;
+            state.wy = state.my - state.wo_y;
+            state.wz = state.mz - state.wo_z;
             memset((void*)buf, 0, UART_BUF_SIZE);
             pos = 0;
         }
@@ -221,5 +243,5 @@ void init_cnc(void) {
 
 	xTaskCreate(candleRxTask, "candleRxTask", 2048, NULL, 1, NULL);
 	xTaskCreate(cncTxTask, "cncTxTask", 2048, NULL, 1, NULL);
-	xTaskCreate(cncRxTask, "cncRxTask", 2048, NULL, 1, NULL);
+	xTaskCreate(cncRxTask, "cncRxTask", 4096, NULL, 1, NULL);
 }
