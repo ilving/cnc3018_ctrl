@@ -29,7 +29,8 @@ static void movementTask(void* args) {
 
 	for(;;) {
         BaseType_t qGet = xQueueReceive(move_queue, (void *)&move, 100/portTICK_PERIOD_MS);
-		
+		if(state->state != CNC_STATE_IDLE && state->state != CNC_STATE_JOG) continue;
+
 		if (qGet == pdFALSE || moveCount == ENCODER_PULSES/2) {
 			moveCount = 0;
 
