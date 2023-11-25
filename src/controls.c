@@ -118,8 +118,8 @@ static void federationOverrideTask() {
 		char cmd = 0;
 
 		if(federationOverride != 0) {
-			if(federationOverride <= -10) cmd = CMD_FEED_OV_INC_10;
 			if(federationOverride < -1) cmd = CMD_FEED_OV_INC_1;
+			if(federationOverride <= -10) cmd = CMD_FEED_OV_INC_10;
 			if(federationOverride > 1) cmd = CMD_FEED_OV_DEC_1;
 			if(federationOverride >= 10) cmd = CMD_FEED_OV_DEC_10;
 			xQueueSend(fedChangeQ, &cmd, portTICK_PERIOD_MS);
