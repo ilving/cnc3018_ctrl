@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <string.h>
 
 #include <driver/adc.h>
 
@@ -109,11 +110,11 @@ static void federationOverrideTask() {
 		adc2_get_raw(FEDERATION_OVERRIDE, ADC_WIDTH_12Bit, &federationOverride);
 
 		federationOverride >>= 2;
-		federationOverride = 10+(190*federationOverride)/(4096>>2);
+		federationOverride = 10+(189*federationOverride)/(4096>>2);
 				
 
 		federationOverride = (int)state->feed_override - federationOverride;
-		ESP_LOGI(CTRL_TAG, "ov: %d", federationOverride);
+		//ESP_LOGI(CTRL_TAG, "ov: %d", federationOverride);
 
 		char cmd = 0;
 
@@ -144,7 +145,7 @@ void init_controls(void) {
 
 
 	adc2_config_channel_atten(FEDERATION_OVERRIDE, ADC_ATTEN_DB_11);
-
+	
 	xTaskCreate(encodersTask, "encodersTask", 1024, NULL, configMAX_PRIORITIES, NULL);
 	xTaskCreate(movementTask, "movementTask", 2048, NULL, 1, NULL);
 

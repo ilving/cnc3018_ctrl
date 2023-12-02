@@ -1,0 +1,188 @@
+{
+  "uuid": "dc2aa302212e8826d9c33943b1b7c3a5",
+  "path": "Offline/cnc3018_ctrl.easyeda",
+  "name": "cnc3018_ctrl.easyeda",
+  "content": "",
+  "created_at": "2023-10-21 16:30:48",
+  "updated_at": "2023-12-02 16:04:15",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "9ccc7952c4b49d96f61e4c15180dddf0",
+      "title": "Sheet_1",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "8f9adbb917b34301ba51590d0cc98060": 1,
+        "2349ad2d6d324a37be49d5e5c630ceeb": 1,
+        "038754441e6046aeac962bf8d71ee7a6": 1,
+        "60d2cecf976c42af922eb8d1c42d6aae": 1,
+        "eaa76950fd7343a1953943ee7b9978d3": 4,
+        "a7291ceaee5442a999df26c55c7e675d": 1,
+        "a9aa2b14f188405792fa87ac344499a4": 2
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "HDR-F-2.54_1x3",
+          1,
+          "HDR-F-2.54_1X3",
+          "F_OVR",
+          {
+            "Supplier Part": "C146690",
+            "Supplier": "LCSC",
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "image": "",
+            "Contributor": "LCEDA_Lib",
+            "spiceSymbolName": "HDR-F-2.54_1x3",
+            "puuid": "f83673d09e13450d934ca6be4be5af8f",
+            "uuid": "a7291ceaee5442a999df26c55c7e675d"
+          }
+        ],
+        [
+          "HDR-M-2.54_2x4",
+          1,
+          "HDR-M-2.54_2X4",
+          "J1",
+          {
+            "Supplier Part": "C58363",
+            "Supplier": "LCSC",
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Contributor": "LCEDA_Lib",
+            "spiceSymbolName": "HDR-M-2.54_2x4",
+            "puuid": "c9b71cab140e4e31a84c15ac14b83555",
+            "uuid": "8f9adbb917b34301ba51590d0cc98060"
+          }
+        ],
+        [
+          "HDR-F-2.54_1x4",
+          4,
+          "HDR-F-2.54_1X4",
+          "SCREEN,X_E,Y_E,Z_E",
+          {
+            "Supplier Part": "C225501",
+            "Supplier": "LCSC",
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Contributor": "LCEDA_Lib",
+            "spiceSymbolName": "HDR-F-2.54_1x4",
+            "puuid": "21473b495b6340c992965357d5701779",
+            "uuid": "eaa76950fd7343a1953943ee7b9978d3"
+          }
+        ],
+        [
+          "ESP32_DEVKITC_V4",
+          1,
+          "ESP32-DEVKITC CORE BOARD ESP32",
+          "U1",
+          {
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Supplier": "",
+            "Supplier Part": "A5130",
+            "link": "https://www.allnewstep.com/product/5253/%E0%B8%9A%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%94-esp32-devkitc-core-board-esp32-v4-development-board-esp32-wroom-32u",
+            "Contributor": "petch.elec14",
+            "spiceSymbolName": "ESP32_DEVKITC_V4",
+            "puuid": "ed3f07067ac347b8a3d8ef25aed9d7fe",
+            "uuid": "2349ad2d6d324a37be49d5e5c630ceeb"
+          }
+        ],
+        [
+          "MP2315-BUCK",
+          1,
+          "MP2315-MODULE2_ZA",
+          "U2",
+          {
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Supplier Part": "",
+            "Supplier": "FatimaTech",
+            "link": "",
+            "Contributor": "zainul.aabdin",
+            "spiceSymbolName": "MP2315-BUCK",
+            "puuid": "eefba78e98c440ec812122787d08644e",
+            "uuid": "60d2cecf976c42af922eb8d1c42d6aae"
+          }
+        ],
+        [
+          "NO",
+          1,
+          "LEVEL-CONVERTER",
+          "U3",
+          {
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Supplier Part": "",
+            "Supplier": "",
+            "link": "",
+            "Contributor": "Manuelito",
+            "spiceSymbolName": "LEVEL-CONVERTER",
+            "puuid": "6106d045f078418694efa432cd486bfb",
+            "uuid": "038754441e6046aeac962bf8d71ee7a6"
+          }
+        ],
+        [
+          "HDR-M-2.54_1x2",
+          2,
+          "HDR-M-2.54_1X2",
+          "XY_FED,Z_FED",
+          {
+            "Supplier Part": "C124375",
+            "Supplier": "LCSC",
+            "Manufacturer": "",
+            "Manufacturer Part": "",
+            "Contributor": "LCEDA_Lib",
+            "spiceSymbolName": "HDR-M-2.54_1x2",
+            "puuid": "70aa5812f21f4991bf427395d51849f4",
+            "uuid": "a9aa2b14f188405792fa87ac344499a4"
+          }
+        ]
+      ],
+      "updateTime": 1701519539,
+      "createTime": 1697895049,
+      "histories": [],
+      "created_at": "2023-10-21 16:30:49",
+      "updated_at": "2023-12-02 15:18:59"
+    },
+    {
+      "uuid": "80312af2299c7bfa26794c3a9e7662a4",
+      "puuid": "dc2aa302212e8826d9c33943b1b7c3a5",
+      "title": "PCB_cnc3018_ctrl",
+      "filename": "PCB_cnc3018_ctrl.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "70aa5812f21f4991bf427395d51849f4": 2,
+        "f83673d09e13450d934ca6be4be5af8f": 1,
+        "ed3f07067ac347b8a3d8ef25aed9d7fe": 1,
+        "21473b495b6340c992965357d5701779": 4,
+        "eefba78e98c440ec812122787d08644e": 1,
+        "6106d045f078418694efa432cd486bfb": 1,
+        "c9b71cab140e4e31a84c15ac14b83555": 1
+      },
+      "BOM": [],
+      "updateTime": 1701522255,
+      "createTime": 1697895663,
+      "histories": [],
+      "created_at": "2023-10-21 16:41:03",
+      "updated_at": "2023-12-02 16:04:15"
+    }
+  ],
+  "sort": [],
+  "title": "cnc3018_ctrl.easyeda",
+  "foldername": "cnc3018_ctrl.easyeda",
+  "schfilename": "cnc3018_ctrl.json",
+  "schfilemtime": 1701519539324
+}

@@ -11,6 +11,14 @@
 		"ssd1306.h": "c",
 		"wire.h": "c",
 		"gpio.h": "c",
-		"i2c_types.h": "c"
+		"i2c_types.h": "c",
+		"*.ipp": "c",
+		"*.tcc": "c",
+		"chrono": "c",
+		"functional": "c",
+		"string_view": "c",
+		"random": "c",
+		"istream": "c",
+		"limits": "c"
 	}
 }
