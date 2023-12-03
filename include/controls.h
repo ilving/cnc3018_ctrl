@@ -18,8 +18,9 @@ extern void init_controls(void);
 
 #define GPIO_Z_A_BIT 4
 #define GPIO_Z_B_BIT 7
-#define ENC_Z_CW 0xB4
-#define ENC_Z_CCW 0x78
+
+#define ENC_CW 0xB4
+#define ENC_CCW 0x78
 
 	// Z axis
 	// B  A      CW
@@ -41,5 +42,7 @@ extern void init_controls(void);
 #define XY_DIST_PIN GPIO_NUM_0 // it's pulled up!!!
 
 #define FEDERATION_OVERRIDE ADC2_CHANNEL_3 //GPIO_NUM_15
+
+extern QueueHandle_t get_move_queue();
 
 #endif

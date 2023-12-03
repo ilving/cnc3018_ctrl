@@ -19,6 +19,8 @@
 		"string_view": "c",
 		"random": "c",
 		"istream": "c",
-		"limits": "c"
+		"limits": "c",
+		"queue.h": "c",
+		"gpio_types.h": "c"
 	}
 }

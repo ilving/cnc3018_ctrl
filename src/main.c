@@ -3,6 +3,7 @@
 
 #include "driver/uart.h"
 
+#include "esp_log.h"
 // ---------------------
 
 #include "isr.h"
@@ -13,7 +14,7 @@
 #define LOG_BUFFER_LEN 512
 
 void app_main() {
-    //esp_log_set_vprintf(__log);
+    esp_log_level_set("*", ESP_LOG_VERBOSE);        // set all components to ERROR level
 
     init_cnc();
     init_isr();

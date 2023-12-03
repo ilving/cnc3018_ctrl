@@ -1,8 +1,8 @@
 #ifndef __CNC_H
 #define __CNC_H
 
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/queue.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 // #include "driver/gpio.h"
 #include "driver/uart.h"
 
@@ -77,8 +77,8 @@ typedef struct {
 #define PINSTATE_Y_LIMIT 'Y'
 
 extern void init_cnc(void);
-extern xQueueHandle get_cnctx_queue();
-extern xQueueHandle get_cncinstant_queue();
+extern QueueHandle_t get_cnctx_queue();
+extern QueueHandle_t get_cncinstant_queue();
 
 extern machineStatus_t* get_cnc_status();
 extern const char* get_cnc_state_name(cncState_t state);

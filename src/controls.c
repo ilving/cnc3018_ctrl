@@ -1,7 +1,11 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include <esp_rom_gpio.h>
 #include <driver/adc.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 #include "esp_log.h"
 
@@ -10,15 +14,16 @@
 #include "generic.h"
 
 #include "cnc.h"
-#include "isr.h"
 #include "controls.h"
 
-static xQueueHandle move_queue = NULL;
+static QueueHandle_t move_queue = NULL;
+QueueHandle_t get_move_queue() { return move_queue; }
 
 float z_dist_per_tick() { return gpio_get_level(Z_DIST_PIN) == 0 ? MOVE_1X_STEP : MOVE_10X_STEP; };
+float xy_dist_per_tick() { return gpio_get_level(XY_DIST_PIN) == 0 ? MOVE_1X_STEP : MOVE_10X_STEP; };
 
 static void movementTask(void* args) {
-	xQueueHandle cncTx = get_cnctx_queue();
+	QueueHandle_t cncTx = get_cnctx_queue();
 
 	Movement_t move = MOVE_None;
 	static qItem cncCmd;
@@ -29,7 +34,7 @@ static void movementTask(void* args) {
 	machineStatus_t *state = get_cnc_status();
 
 	for(;;) {
-        BaseType_t qGet = xQueueReceive(move_queue, (void *)&move, 100/portTICK_PERIOD_MS);
+        BaseType_t qGet = xQueueReceive(move_queue, (void *)&move, pdMS_TO_TICKS(100));
 		if(state->state != CNC_STATE_IDLE && state->state != CNC_STATE_JOG) continue;
 
 		if (qGet == pdFALSE || moveCount == ENCODER_PULSES/2) {
@@ -37,17 +42,17 @@ static void movementTask(void* args) {
 
 			if (moveX != 0 || moveY != 0) {
 				snprintf(cncCmd.cmd, UART_BUF_SIZE, "$J=G21G91X%.3fY%.3fF500\r\n", moveX, moveY);
-				xQueueSend(cncTx, &cncCmd, 100/portTICK_PERIOD_MS);
+				xQueueSend(cncTx, &cncCmd, pdMS_TO_TICKS(100));
 
-				ESP_LOGI(CTRL_TAG, "[%s]", cncCmd.cmd);
+				ESP_LOGD(CTRL_TAG, "[%s]", cncCmd.cmd);
 
 				moveX = moveY = 0;
 			}
 			if (moveZ != 0) {
 				snprintf(cncCmd.cmd, UART_BUF_SIZE, "$J=G21G91Z%.3fF500\r\n", moveZ);
-				xQueueSend(cncTx, &cncCmd, 100/portTICK_PERIOD_MS);
+				xQueueSend(cncTx, &cncCmd, pdMS_TO_TICKS(100));
 
-				ESP_LOGI(CTRL_TAG, "[%s]", cncCmd.cmd);
+				ESP_LOGD(CTRL_TAG, "[%s]", cncCmd.cmd);
 
 				moveZ = 0;
 			}
@@ -58,7 +63,7 @@ static void movementTask(void* args) {
 		moveCount++;
 
 		float z_shift = z_dist_per_tick();
-		float xy_shift = gpio_get_level(XY_DIST_PIN) == 0 ? MOVE_1X_STEP : MOVE_10X_STEP;
+		float xy_shift = xy_dist_per_tick();
 
 		switch (move) {
 			case MOVE_None: break;
@@ -74,32 +79,9 @@ static void movementTask(void* args) {
 	vTaskDelete(NULL);
 }
 
-static void encodersTask(void* args) {
-	xQueueHandle isrQueue = get_gpio_queue();
-
-	uint8_t zEncoder = 0; 
-
-	uint32_t gpio_state = 0;
-	Movement_t move = MOVE_None;
-
-	for(;;) {
-        if (xQueueReceive(isrQueue, (void *)&gpio_state, portMAX_DELAY) == pdFALSE) continue;
-
-		move = MOVE_None;
-
-		if( (gpio_state & ENC_Z_FLAG) != 0) {
-			zEncoder = zEncoder << 2 | (GET_BIT(gpio_state, GPIO_Z_A_BIT) << 1) | GET_BIT(gpio_state, GPIO_Z_B_BIT);
-			if(zEncoder == ENC_Z_CW) move = MOVE_Z_CW;
-			if(zEncoder == ENC_Z_CCW) move = MOVE_Z_CCW;
-		}
-
-		if(move != MOVE_None) xQueueSend(move_queue, &move, 1/portTICK_PERIOD_MS);
-    }
-}
-
 static void federationOverrideTask() {
 	machineStatus_t *state = get_cnc_status();
-	xQueueHandle fedChangeQ = get_cncinstant_queue();
+	QueueHandle_t fedChangeQ = get_cncinstant_queue();
 
 	static int federationOverride = 0;
 
@@ -107,7 +89,7 @@ static void federationOverrideTask() {
 		vTaskDelay(250/portTICK_PERIOD_MS);
 		if(!state->active) continue;
 
-		adc2_get_raw(FEDERATION_OVERRIDE, ADC_WIDTH_12Bit, &federationOverride);
+		adc2_get_raw(FEDERATION_OVERRIDE, ADC_WIDTH_BIT_12, &federationOverride);
 
 		federationOverride >>= 2;
 		federationOverride = 10+(189*federationOverride)/(4096>>2);
@@ -133,21 +115,18 @@ static void federationOverrideTask() {
 void init_controls(void) {
 	move_queue = xQueueCreate(32, sizeof(Movement_t));
 
-	esp_log_level_set(CTRL_TAG, ESP_LOG_WARN);
+	esp_log_level_set(CTRL_TAG, ESP_LOG_VERBOSE);
 
-	gpio_pad_select_gpio(Z_DIST_PIN);
+	esp_rom_gpio_pad_select_gpio(Z_DIST_PIN);
 	gpio_set_direction(Z_DIST_PIN, GPIO_MODE_INPUT);
 	gpio_set_pull_mode(Z_DIST_PIN, GPIO_PULLDOWN_ONLY);
 
-	gpio_pad_select_gpio(XY_DIST_PIN);
+	esp_rom_gpio_pad_select_gpio(XY_DIST_PIN);
 	gpio_set_direction(XY_DIST_PIN, GPIO_MODE_INPUT);
 	gpio_set_pull_mode(XY_DIST_PIN, GPIO_PULLDOWN_ONLY);
 
-
 	adc2_config_channel_atten(FEDERATION_OVERRIDE, ADC_ATTEN_DB_11);
 	
-	xTaskCreate(encodersTask, "encodersTask", 1024, NULL, configMAX_PRIORITIES, NULL);
 	xTaskCreate(movementTask, "movementTask", 2048, NULL, 1, NULL);
-
 	xTaskCreate(federationOverrideTask, "federationOverrideReadTask", 2048, NULL, 1, NULL);
 }

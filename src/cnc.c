@@ -1,5 +1,8 @@
 #include <string.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+
 #include "driver/gpio.h"
 #include "esp_log.h"
 // ------------------------
@@ -8,10 +11,10 @@
 #include "cnc.h"
 
 static QueueHandle_t cnc_tx_q;
-xQueueHandle get_cnctx_queue() { return cnc_tx_q; };
+QueueHandle_t get_cnctx_queue() { return cnc_tx_q; };
 
 static QueueHandle_t cnc_instant_tx_q;
-xQueueHandle get_cncinstant_queue() {return cnc_instant_tx_q; }
+QueueHandle_t get_cncinstant_queue() {return cnc_instant_tx_q; }
 
 static machineStatus_t state;
 machineStatus_t* get_cnc_status() { return &state; };
@@ -223,8 +226,6 @@ void init_cnc(void) {
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_REF_TICK,
     };
-
-    esp_timer_get_time();
 
     uart_driver_install(CANDLE_UART, UART_BUF_SIZE * 2, UART_BUF_SIZE * 2, 0, NULL, 0);
 	uart_param_config(CANDLE_UART, &uartCfg);
